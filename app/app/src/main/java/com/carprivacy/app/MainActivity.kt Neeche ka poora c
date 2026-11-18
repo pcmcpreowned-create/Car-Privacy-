@@ -1,0 +1,76 @@
+package com.carprivacy.app
+
+import android.os.Bundle
+import android.net.Uri
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent { CarPrivacyScreen() }
+    }
+}
+
+@Composable
+fun CarPrivacyScreen() {
+    var photos by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+    val photoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(20)
+    ) { selectedPhotos ->
+        photos = selectedPhotos
+    }
+
+    MaterialTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Text("Car Privacy", style = MaterialTheme.typography.headlineLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Protect your car number plate privacy")
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        photoPicker.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Select Photos (Up to 20)")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Selected Photos: ${photos.size}")
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyColumn {
+                    items(photos) { photo ->
+                        Text(
+                            text = photo.lastPathSegment ?: "Selected photo",
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                        HorizontalDivider()
+                    }
+                }
+            }
+        }
+    }
+}
